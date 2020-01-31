@@ -91,10 +91,10 @@ function generate_build_targets() {
   COMMON_TARGETS="//cyber/... union //modules/common/kv_db/... union //modules/dreamview/... $DISABLED_CYBER_MODULES"
   case $BUILD_FILTER in
   cyber)
-    BUILD_TARGETS=`bazel query //cyber/... union //modules/tools/visualizer/...`
+    BUILD_TARGETS=`bazel query //cyber/...`
     ;;
   drivers)
-    BUILD_TARGETS=`bazel query //cyber/... union //modules/tools/visualizer/... union //modules/drivers/... except //modules/drivers/tools/... except //modules/drivers/canbus/... except //modules/drivers/video/...`
+    BUILD_TARGETS=`bazel query //cyber/... union //modules/drivers/... except //modules/drivers/tools/... except //modules/drivers/canbus/... except //modules/drivers/video/...`
     ;;
   control)
     BUILD_TARGETS=`bazel query $COMMON_TARGETS union //modules/control/... `
@@ -114,7 +114,7 @@ function generate_build_targets() {
   *)
 #    BUILD_TARGETS=`bazel query //modules/... union //cyber/...`
     # FIXME(all): temporarily disable modules doesn't compile in 18.04
-    BUILD_TARGETS=`bazel query //modules/... union //cyber/... except //modules/tools/visualizer/... except //modules/v2x/... except //modules/map/tools/map_datachecker/... $DISABLE_CYBER_MODULES`
+    BUILD_TARGETS=`bazel query //modules/... union //cyber/... except //modules/v2x/... except //modules/map/tools/map_datachecker/... $DISABLE_CYBER_MODULES`
   esac
 
   if [ $? -ne 0 ]; then
@@ -155,6 +155,8 @@ function build() {
   if [ ${PIPESTATUS[0]} -ne 0 ]; then
     fail 'Build failed!'
   fi
+  success 'Build passed!'
+  exit 0
 
   # Build python proto
   build_py_proto
@@ -340,7 +342,7 @@ function release() {
   cd -
 
   # setup cyber binaries and convert from //path:target to path/target
-  CYBERBIN=$(bazel query "kind(cc_binary, //cyber/... //modules/tools/visualizer/...)" | sed 's/^\/\///' | sed 's/:/\//' | sed '/.*.so$/d')
+  CYBERBIN=$(bazel query "kind(cc_binary, //cyber/...)" | sed 's/^\/\///' | sed 's/:/\//' | sed '/.*.so$/d')
   for BIN in ${CYBERBIN}; do
     cp -P --parent "bazel-bin/${BIN}" ${APOLLO_RELEASE_DIR}
   done
@@ -499,7 +501,7 @@ function citest_basic() {
 #   BUILD_TARGETS="
 #    `bazel query //modules/... union //cyber/...`
 #  "
-  BUILD_TARGETS=`bazel query //modules/... union //cyber/... except //modules/tools/visualizer/... except //modules/v2x/... except //modules/drivers/video/tools/decode_video/... except //modules/map/tools/map_datachecker/... `
+  BUILD_TARGETS=`bazel query //modules/... union //cyber/... except //modules/v2x/... except //modules/drivers/video/tools/decode_video/... except //modules/map/tools/map_datachecker/... `
 
   JOB_ARG="--jobs=12 --ram_utilization_factor 80"
 
@@ -572,7 +574,7 @@ function citest() {
 }
 
 function run_cpp_lint() {
-  BUILD_TARGETS="`bazel query //modules/... except //modules/tools/visualizer/... union //cyber/...`"
+  BUILD_TARGETS="`bazel query //modules/... union //cyber/...`"
   bazel test --config=cpplint -c dbg $BUILD_TARGETS
 }
 

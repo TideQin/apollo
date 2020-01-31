@@ -29,7 +29,8 @@ wget "https://repo.continuum.io/miniconda/${INSTALLER}"
 bash "${INSTALLER}" -b -p "${CONDA_PATH}"
 
 # Init python envs.
-"${CONDA_PATH}/bin/conda" env update -f py27_conda.yaml
+"${CONDA_PATH}/bin/conda" env update -f conda_py3_cpu.yaml
+"${CONDA_PATH}/bin/conda" env update -f conda_py3_gpu.yaml
 
 # Clean up.
 rm -f "${INSTALLER}"
